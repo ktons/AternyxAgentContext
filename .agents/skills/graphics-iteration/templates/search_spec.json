@@ -1,0 +1,38 @@
+{
+  "description": "lookdev 闭环搜索 spec 模板。复制到 temp/<任务>/search.json 后按项目改路径/leg 集/token；mapping 把扁平参数落到 Volume/灯光/材质。budget.trials 是评估器调用次数（CMA-ES 按代提议，最后一个不完整代只评估剩余个体）。",
+  "space": {
+    "exposure": {"kind": "float", "min": 0.8, "max": 1.4, "default": 1.0},
+    "ambient": {"kind": "float", "min": 0.08, "max": 0.45, "default": 0.25, "step": 0.005},
+    "keyAzimuth": {"kind": "float", "min": -70, "max": 70, "step": 5, "default": 0},
+    "keyElevation": {"kind": "float", "min": 5, "max": 70, "step": 5, "default": 35}
+  },
+  "mapping": {
+    "exposure": {"target": "volume", "field": "exposure"},
+    "ambient": {"target": "volume", "field": "ambientIntensity"},
+    "keyAzimuth": {"target": "light", "entity": "KeyLight", "component": "azimuthDeg"},
+    "keyElevation": {"target": "light", "entity": "KeyLight", "component": "elevationDeg"}
+  },
+  "fixed": {
+    "note": "固定参数会原样并进每个 trial 的 params（例如不动 bloom / 只加一个材质补丁）"
+  },
+  "budget": {
+    "trials": 30,
+    "seed": 7,
+    "optimizer": "cmaes",
+    "max_seconds": 3600
+  },
+  "evaluator": {
+    "command": "python .agents/skills/graphics-iteration/scripts/lookdev_trial.py --params-file {params} --out {out} --legs front_front,left45_left45,back180_back,face_front,face_left45 --tokens .agents/skills/graphics-iteration/templates/lookdev.tokens.json --profile day",
+    "timeout": 900,
+    "workdir": "."
+  },
+  "objective": {
+    "tokens": ".agents/skills/graphics-iteration/templates/lookdev.tokens.json",
+    "profile": "day",
+    "train_legs": ["front_front", "left45_left45", "back180_back", "face_front"],
+    "holdout_legs": ["face_left45", "hair_front", "weapon_front"],
+    "required_legs": ["front_front", "left45_left45", "back180_back", "face_front"]
+  },
+  "cache_dir": "temp/search/cache",
+  "notes": "材质调色示例 mapping 条目（评估器命令需加 --allow-material-write）：{\"skinV\": {\"target\": \"material\", \"path\": \"Assets/material/char/char_skin.mat\", \"property\": \"gSkinSSSParams\", \"index\": 1}}；value 会落到 numbers[1]，其余分量由 trial 读回保留。"
+}

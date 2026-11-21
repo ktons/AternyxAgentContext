@@ -1,0 +1,139 @@
+{
+  "$description": "Aternyx lookdev 美术规范 token 模板（DTCG 2025.10 子集）。复制到 <project>/Fixtures/lookdev/art.tokens.json 后按项目美术规范替换色板与窗口；带 TODO 的是示例占位，lint --strict 会拒绝。",
+  "color": {
+    "$type": "color",
+    "$description": "色板：镜头/材质必须能落到的颜色。sRGB 为消费真源，OKLCH 由工具计算。",
+    "palette": {
+      "skin_base": {
+        "$description": "TODO 示例（vectorcell 夜景参考取色）：皮肤受光基色；替换为本项目设定",
+        "$value": {"colorSpace": "srgb", "components": [0.949, 0.776, 0.706], "hex": "#f2c6b4"}
+      },
+      "skin_shadow": {
+        "$description": "TODO 示例：皮肤暗部/环境遮蔽色（暖灰，不落青）",
+        "$value": {"colorSpace": "srgb", "components": [0.788, 0.561, 0.525], "hex": "#c98f86"}
+      },
+      "hair_base": {
+        "$description": "TODO 示例：头发中间调（蓝灰）",
+        "$value": {"colorSpace": "srgb", "components": [0.604, 0.663, 0.784], "hex": "#9aa9c8"}
+      },
+      "hair_shadow": {
+        "$description": "TODO 示例：头发暗部（冷紫灰）",
+        "$value": {"colorSpace": "srgb", "components": [0.427, 0.498, 0.659], "hex": "#6d7fa8"}
+      },
+      "hat_purple": {
+        "$description": "TODO 示例：帽体主色（深紫）",
+        "$value": {"colorSpace": "srgb", "components": [0.290, 0.184, 0.369], "hex": "#4a2f5e"}
+      },
+      "hat_gold": {
+        "$description": "TODO 示例：金属饰边（暖金，高光不糊白）",
+        "$value": {"colorSpace": "srgb", "components": [0.784, 0.604, 0.306], "hex": "#c89a4e"}
+      },
+      "cloth_black": {
+        "$description": "TODO 示例：黑衣基色（保留结构，不死黑）",
+        "$value": {"colorSpace": "srgb", "components": [0.102, 0.102, 0.133], "hex": "#1a1a22"}
+      },
+      "moon_glow": {
+        "$description": "TODO 示例：月亮/主光源亮部（暖黄）",
+        "$value": {"colorSpace": "srgb", "components": [0.949, 0.890, 0.604], "hex": "#f2e39a"}
+      },
+      "sky_night": {
+        "$description": "TODO 示例：夜景天空（深蓝，非纯黑）",
+        "$value": {"colorSpace": "srgb", "components": [0.106, 0.133, 0.251], "hex": "#1b2240"}
+      },
+      "eye_red": {
+        "$description": "TODO 示例：眼睛虹膜强调色",
+        "$value": {"colorSpace": "srgb", "components": [0.698, 0.165, 0.227], "hex": "#b22a3a"}
+      }
+    }
+  },
+  "lookdev": {
+    "$description": "可量化验收面：窗口是判读目标，不是艺术评分；换场景/编排/post 后重新标定。",
+    "paletteThreshold": {
+      "$type": "number",
+      "$description": "色板命中 ΔE2000 上限；coverage 按此阈值统计",
+      "$value": 10
+    },
+    "window": {
+      "day": {
+        "$description": "日景写实落点（角色渲染迭代拍板，见 references/03-evaluation.md）",
+        "body": {
+          "p98Min": {"$type": "number", "$description": "亮部 p98 luma 下限（tonemap+sRGB）", "$value": 0.82},
+          "p98Max": {"$type": "number", "$value": 0.93},
+          "p15Min": {"$type": "number", "$description": "暗部 p15 luma 下限（暖色序 R>G>B）", "$value": 0.18},
+          "p15Max": {"$type": "number", "$value": 0.35},
+          "ratioMin": {"$type": "number", "$description": "行内亮暗比 p98/p15", "$value": 2.5},
+          "ratioMax": {"$type": "number", "$value": 4.0},
+          "clipMax": {"$type": "number", "$description": "任一通道 >=250 的像素占比", "$value": 0.0}
+        },
+        "face": {
+          "p98Min": {"$type": "number", "$description": "face/skinback 行内比不作门（窄坡 SDF），只判亮部", "$value": 0.82},
+          "p98Max": {"$type": "number", "$value": 0.93},
+          "clipMax": {"$type": "number", "$value": 0.0}
+        },
+        "condition": {
+          "$description": "三条光照条件预设沿用 body 窗（同曝光口径）",
+          "p98Min": {"$type": "number", "$value": 0.82},
+          "p98Max": {"$type": "number", "$value": 0.93},
+          "p15Min": {"$type": "number", "$value": 0.18},
+          "p15Max": {"$type": "number", "$value": 0.35},
+          "clipMax": {"$type": "number", "$value": 0.0}
+        },
+        "close": {
+          "$description": "close-up 只观察暗部覆盖/主体占高，暂无标定窗；有基线后在此登记",
+          "clipMax": {"$type": "number", "$value": 0.0}
+        }
+      },
+      "night": {
+        "$description": "夜景（vc_lookdev 矩阵专用，V10 判读拍板）",
+        "body": {
+          "p98Min": {"$type": "number", "$description": "夜景主秀光落 ACES 肩部更低，下限放宽", "$value": 0.72},
+          "p98Max": {"$type": "number", "$value": 0.93},
+          "p15Min": {"$type": "number", "$description": "黑衣/夜发 × 低环境光", "$value": 0.05},
+          "p15Max": {"$type": "number", "$value": 0.20},
+          "clipMax": {"$type": "number", "$value": 0.0}
+        },
+        "face": {
+          "p98Min": {"$type": "number", "$value": 0.72},
+          "p98Max": {"$type": "number", "$value": 0.93},
+          "clipMax": {"$type": "number", "$value": 0.0}
+        }
+      }
+    },
+    "weight": {
+      "body": {
+        "p98": {"$type": "number", "$description": "亮部落窗优先（结构保真）", "$value": 2.0},
+        "p15": {"$type": "number", "$value": 1.5},
+        "ratio": {"$type": "number", "$value": 1.0},
+        "clip": {"$type": "number", "$description": "clip 是缺陷，权重最高", "$value": 4.0},
+        "paletteCoverage": {"$type": "number", "$value": 1.0},
+        "paletteDeltaE": {"$type": "number", "$value": 0.5}
+      },
+      "face": {
+        "p98": {"$type": "number", "$value": 1.5},
+        "clip": {"$type": "number", "$value": 4.0}
+      },
+      "condition": {
+        "p98": {"$type": "number", "$value": 1.5},
+        "p15": {"$type": "number", "$value": 1.0},
+        "clip": {"$type": "number", "$value": 4.0}
+      },
+      "close": {
+        "clip": {"$type": "number", "$value": 4.0}
+      }
+    }
+  },
+  "quality": {
+    "$description": "画质模型参考项（MUSIQ/CLIP-IQA）：只记录基线与容差，不作为效果门。",
+    "musiq": {
+      "$type": "number",
+      "$description": "TODO 基线：在固定 leg 集上跑一次模型后回填均值/容差；留空表示未接入",
+      "$value": 0,
+      "$extensions": {
+        "aternyx": {
+          "note": "baseline/tolerance 由 references/07-metrics.md 的接入协议写入，不手工猜",
+          "gate": false
+        }
+      }
+    }
+  }
+}
