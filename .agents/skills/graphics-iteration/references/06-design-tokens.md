@@ -126,7 +126,7 @@ shader 内的颜色常量与 token 建立单一映射。
 
 ```bash
 # 1) 先校验（--strict：TODO/告警即失败；--require-palette：色板非空）
-python .agents/skills/graphics-iteration/scripts/design_tokens.py lint \
+python <skill>/scripts/design_tokens.py lint \
   <project>/design/lookdev/art.tokens.json --strict --require-palette
 
 # 2) 查看解析结果（窗口/权重/色板 → JSON）

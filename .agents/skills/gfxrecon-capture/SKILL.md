@@ -13,7 +13,7 @@ description: macOS Vulkan GFXReconstruct 抓帧与分析：按帧区间抓取窗
 1. **准备抓帧条件**：使用窗口模式目标（capture 以 `vkQueuePresentKHR` 计帧），确认 SDK、
    目标程序、工程/场景、帧区间和构建产物都是待查版本。
 2. **抓帧**：用 [capture_frames.sh](scripts/capture_frames.sh) 固定帧区间、绝对路径和 CWD；
-   确认 stdout 出现 `[gfxrecon] INFO - Finished recording`，再使用产物。
+   确认 stdout 出现 `Finished recording`，再使用产物。
 3. **转 jsonl**：`gfxrecon-convert --format jsonl <capture.gfxr>`，得到逐调用索引。
 4. **提 pass 结构**：用 [extract_passes.py](scripts/extract_passes.py) 列出每条命令缓冲的
    render pass、draw 数与首末 draw 索引。

@@ -53,26 +53,26 @@ shader、材质、场景光照/观察编排与后处理；行为正确性、协�
 
 ```bash
 # 规范先行（模板带 TODO 占位；项目落地时复制到项目 token 路径并去掉 TODO，再加 --strict 作为开工门）
-python .agents/skills/graphics-iteration/scripts/design_tokens.py lint <tokens.json> --strict
+python <skill>/scripts/design_tokens.py lint <tokens.json> --strict
 
 # 两轮结果对比 + token 复合分（0 = 全部落窗）
-python .agents/skills/graphics-iteration/scripts/compare_evals.py \
+python <skill>/scripts/compare_evals.py \
   temp/<基线目录> temp/<本轮目录> --out temp/<任务名>_compare.json
-python .agents/skills/graphics-iteration/scripts/score_trial.py \
+python <skill>/scripts/score_trial.py \
   --metrics temp/<任务名>_scene/eval_metrics.json --tokens <tokens.json> --profile day \
   --images temp/<任务名>_scene --out temp/<任务名>_score.json
 
 # 单图确定性指标（色彩/色板/显著性/构图）
-python .agents/skills/graphics-iteration/scripts/image_metrics.py \
+python <skill>/scripts/image_metrics.py \
   --image temp/<任务名>/capture_front.png --tokens <tokens.json> \
   --roi torso --stride 1 --out temp/<任务名>_front_metrics.json
 
 # 闭环搜索（spec 见 templates/search_spec.json）
-python .agents/skills/graphics-iteration/scripts/param_search.py \
+python <skill>/scripts/param_search.py \
   --spec temp/<任务名>/search.json --out temp/<任务名>/search
 ```
 
-脚本从工作区根执行（macOS 用 `python3`，Windows 用 `python`）；产物目录先创建；`temp/` 按工作区规则管理。
+脚本从工作区根执行（macOS 用 `python3`，Windows 用 `python`）；产物目录先创建；`temp/` 是工作区临时目录，不入库。
 新脚本依赖标准库，并复用现有 PNG 解码与指标口径。
 
 ## 按需参考

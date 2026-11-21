@@ -35,13 +35,15 @@ description: 最终帧读回验收：用改前/改后两组裸帧按 seq 配对�
    - **预期变化**：特性生效、参数调整、风格变化，要求差异落在事先定义的作用域内，且作用域外保持一致。
 2. **固定采集条件**：改前/改后使用相同目标、构建配置、工程/场景、相机、分辨率、视图、帧区间和
    时间源；动态场景按相位对齐，静态场景按稳态窗口取帧。
-3. **核对元数据**：比较 `width`、`height`、`format`、`seq` 集合。尺寸/格式不同直接判不可比；
+3. **核对元数据**：`frame_diff.py` 目录模式自动核对同名 `<prefix>_meta.json` 的 `width`、`height`、
+   `format`、`frames`；缺 meta 或仅一侧有 meta 时跳过并注明，需人工核对。尺寸/格式不同直接判不可比；
    seq 集合不相等先查采集窗口和 `--frames` 余量，缺帧按失败处理。
 4. **逐字节对比**：用 [frame_diff.py](scripts/frame_diff.py) 对目录或单帧比较。
 5. **预期变化取证**：用 [frame_diff_mask.py](scripts/frame_diff_mask.py) 出差异掩膜、bbox 和质心；
    用 [frame_to_png.py](scripts/frame_to_png.py) 出裁剪放大图供目检。
 6. **判定**：行为中性组全部 `IDENTICAL` 才通过；预期变化组同时满足“差异在作用域内”和
-   “作用域外无差异”。判读责任在使用方：DIFF 帧先做同构建同帧复现，再决定是否豁免。
+   “作用域外无差异”。存在跳过帧时结论记为 `SKIP`，不作为通过证据。判读责任在使用方：
+   DIFF 帧先做同构建同帧复现，再决定是否豁免。
 7. **留证**：保存两组帧的哈希 manifest、差异 JSON、掩膜/裁剪图和结论；二进制帧留在临时目录，
    哈希 manifest 入库。
 
@@ -54,18 +56,20 @@ python3 '<skill>/scripts/frame_diff.py' <dir_before> <dir_after>
 # 单文件
 python3 '<skill>/scripts/frame_diff.py' <a_frame1000.bin> <b_frame1000.bin>
 
-# 只标注豁免 seq，不改变判定
+# 只标注豁免 seq：该 seq 不参与判定，但本轮结论记为 SKIP
 python3 '<skill>/scripts/frame_diff.py' <dir_before> <dir_after> --skip-seq 0,7
 ```
 
 输出：
 
 - 单帧：最大通道差、非零差像素数、差值分布；
-- 目录：公共 seq 逐帧结果和 `SUMMARY: N/M IDENTICAL (compared=..., diff=[...], skipped=[...])`。
+- 目录：`meta` 核对结果、公共 seq 逐帧结果和 `SUMMARY: N/M IDENTICAL (compared=..., diff=[...], skipped=[...])`。
 
-退出码：`0` 全部一致（计豁免）；`1` 有 DIFF 或缺帧；`2` 无公共 seq。
+退出码：`0` PASS（全部一致）；`1` FAIL（有 DIFF、缺帧或 meta 不一致）；`2` 无公共 seq；
+`3` SKIP（其余一致但存在被跳过的 seq）。
 
-`--skip-seq` 只做豁免意图标注，不自动豁免；被标注的 seq 仍出现在 `skipped` 列表，判读结论写进报告。
+`--skip-seq` 把指定 seq 标为 `SKIPPED`：不参与字节判定，但本轮结论记为 `SKIP` 而非 PASS，
+不能当作通过证据。跳过前先做同构建同帧复现，判读结论与依据写进报告；用 `SKIP` 交付时必须说明缺口。
 
 ## 差异掩膜与量化
 
@@ -98,14 +102,16 @@ python3 '<skill>/scripts/frame_to_png.py' <frame1000.bin> --out temp/ \
   --crop 400,600,320,240 --zoom 3
 ```
 
-尺寸从同目录 `<prefix>_meta.json` 读取；散 bin 用 `--width/--height`。
-PNG 按字节直写，BGRA 源会出现 R/B 互换；目检时按通道序解释，量化脚本按字节语义消费不受影响。
+尺寸从同目录 `<prefix>_meta.json` 读取，`format` 为 BGRA 时脚本会提示；散 bin 用 `--width/--height`。
+PNG 按字节直写，BGRA 源会出现 R/B 互换；目检时按通道序解释（或加 `--swap-rb` 交换 R/B），
+量化脚本按字节语义消费不受影响。
 
 ## 判定纪律
 
 - **行为中性组按逐字节判定**：全部公共 seq 的哈希一致才算通过；“看起来没变”不作为证据。
 - **预期变化组按作用域判定**：先定义特征区域和阈值，再看差异 bbox、质心和计数；作用域外的差异按回归处理。
 - **缺帧即失败**：两侧 seq 集合不一致先查采集条件；公共 seq 之外不推定一致。
+- **SKIP 不是 PASS**：`--skip-seq` 只把缺口显式化，结论按 SKIP 记录；交付时说明跳过原因与同构建复现结果。
 - **同条件才可比**：分辨率、视图、场景、相机、时间源、构建配置任一变化，历史结果只作参考。
 - **基线 manifest 入库**：逐帧 SHA-256 + 尺寸/格式/seq + 溯源（版本、工程、采集脚本、判读结论）；
   二进制帧不入库。

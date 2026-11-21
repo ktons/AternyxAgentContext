@@ -1,0 +1,7 @@
+# Python 缓存
+__pycache__/
+*.py[cod]
+.venv/
+
+# 临时产物（抓帧、截图、日志、一次性脚本）
+temp/

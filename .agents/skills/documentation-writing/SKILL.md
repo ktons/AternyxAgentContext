@@ -10,13 +10,15 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 
 ## 文档类型与落位
 
+文档总目录为 `.agents/docs/`；架构总览固定为 `.agents/docs/overview-architecture.md`，作为文档入口。
+
 | 类型 | 用途 | 位置 | 生命周期 | 模板 |
 |---|---|---|---|---|
-| 模块文档 | 维护模块当前事实 | `docs/modules/` | 永久，随代码同步 | [模块入口](templates/module-overview.md)、[主题文档](templates/module-topic.md) |
-| 设计文档 | 记录一次设计的目标、选型与方案 | `docs/design/` | 一次性产物 | [设计文档](templates/design-doc.md) |
-| 开发文档 | 记录一次面向开发者的操作说明 | `docs/dev/` | 一次性产物 | [开发文档](templates/dev-doc.md) |
-| 会话总结 | 归纳一次讨论、分析或结论 | `docs/temp/` | 一次性产物 | 按内容组织 |
-| roadmap 与迭代计划 | 当前迭代的任务状态、决策与执行 | `docs/iteration/` | 迭代收口清空 | [roadmap](templates/roadmap.md)；迭代计划模板见 `complex-task-planning` |
+| 模块文档 | 维护模块当前事实 | `.agents/docs/modules/` | 永久，随代码同步 | [模块入口](templates/module-overview.md)、[主题文档](templates/module-topic.md) |
+| 设计文档 | 记录一次设计的目标、选型与方案 | `.agents/docs/design/` | 一次性产物 | [设计文档](templates/design-doc.md) |
+| 开发文档 | 记录一次面向开发者的操作说明 | `.agents/docs/dev/` | 一次性产物 | [开发文档](templates/dev-doc.md) |
+| 会话总结 | 归纳一次讨论、分析或结论 | `.agents/docs/temp/` | 一次性产物 | 按内容组织 |
+| roadmap 与迭代计划 | 当前迭代的任务状态、决策与执行 | `.agents/docs/iteration/` | 迭代收口清空 | [roadmap 模板](../complex-task-planning/templates/roadmap-template.md)；迭代计划模板同源 |
 
 一次性产物指为特定目的写作一次、随后随 Git 历史留存的文档；内容过期时重写或作废。
 用户指定保存路径时，按用户路径落位。
@@ -24,8 +26,8 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 ## 模块文档
 
 模块文档维护模块的定位、边界、契约、关键入口与当前事实；深层机制和长示例下沉到同目录主题文档。
-小模块使用 `module-<模块>.md`；大模块或文档达到 500 行时拆为 `<模块>/overview.md` 与主题文档，
-overview 作为唯一对外入口，并索引各主题文档。
+小模块使用 `.agents/docs/modules/module-<模块>.md`；大模块或文档达到 500 行时拆为
+`.agents/docs/modules/<模块>/overview.md` 与同目录主题文档，overview 作为唯一对外入口，并索引各主题文档。
 
 入口章节沿用六章；信息不足的章节简述现状：
 

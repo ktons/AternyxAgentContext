@@ -48,7 +48,7 @@ Debuggers/x64 与实际 LLVM 安装目录。记录实际发现的工具路径与
 ```powershell
 Push-Location <运行目录>
 try {
-  python <workspace>/.agents/skills/win-crash-debug/scripts/lldb_stack.py --lldb "<实际lldb.exe>" --exe <target.exe> --args "<参数>" --log <workspace>/temp/crash_lldb.log
+  python <skill>/scripts/lldb_stack.py --lldb "<实际lldb.exe>" --exe <target.exe> --args "<参数>" --log <workspace>/temp/crash_lldb.log
 } finally {
   Pop-Location
 }
@@ -69,7 +69,7 @@ try {
 怀疑抓栈链路异常时执行：
 
 ```bash
-cd temp && cl /nologo /Zi /Od <workspace>/.agents/skills/win-crash-debug/scripts/mini_crash.c /Fe:mini_crash.exe \
+cd temp && cl /nologo /Zi /Od <skill>/scripts/mini_crash.c /Fe:mini_crash.exe \
   && "<实际cdb.exe>" -lines -c "g; k; q" mini_crash.exe
 ```
 

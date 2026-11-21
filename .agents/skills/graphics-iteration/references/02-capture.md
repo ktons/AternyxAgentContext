@@ -19,7 +19,7 @@
   补拍特写 → 逐 leg ROI 指标 → 汇总 JSON + contact sheet。每轮重跑同一口径做前后对比。
 - **中性面与成片面**分别出图：中性面临时关闭 bloom/描边等效果，并读回原值；成片面保留场景原样。
   中性 override 把强度和阈值一起归零，结果对打包顺序不敏感。
-- 每轮显式给 `--out temp/<任务名>`；`temp/` 按工作区规则管理。产物含 capture PNG、`eval_metrics.json`、
+- 每轮显式给 `--out temp/<任务名>`；`temp/` 是工作区临时目录，不入库。产物含 capture PNG、`eval_metrics.json`、
   `contact_sheet.png` 与日志。
 - 场景或预设数量变化后，先核对 ROI 与 contact sheet 口径，再采信数字；脚本的 WARN 作为核对提示。
 
@@ -44,6 +44,6 @@
 
 - **指标对比**：配对两份 metrics JSON，输出逐 leg 分位差、亮度比、clip、哈希相同数、缺 leg、超限项与分组汇总。
   先看对比 JSON，再回到 contact sheet 与原图目检。
-- **逐像素对拍**：行为中性/回归按 seq 配对判 IDENTICAL/DIFF，缺帧按失败处理；哈希比较用于冻结自检。
+- **逐像素对拍**：行为中性/回归按 seq 配对判 IDENTICAL/DIFF/SKIP，缺帧按失败处理；哈希比较用于冻结自检。
 - **基线与证据目录**：证据目录命名 `temp/<任务名>[_neutral|_scene]`，每轮一个目录，保留基线目录到收口。
 - **产物新鲜度**：判读前确认二进制构建时间晚于相关源码提交；运行日志包含预期布点，缺布点行说明二进制过旧。

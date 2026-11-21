@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -25,6 +26,25 @@ WAIT_SECS = 30
 
 def log(msg: str) -> None:
     print(f"[ensure renderdoc-mcp] {msg}", file=sys.stderr, flush=True)
+
+
+def find_renderdoccmd() -> str | None:
+    """按显式配置 → PATH → 常见安装目录的顺序找 renderdoccmd。"""
+    for cand in (os.environ.get("DCC_MCP_RENDERDOC_CMD"),
+                 shutil.which("renderdoccmd.exe"),
+                 shutil.which("renderdoccmd")):
+        if cand:
+            return cand
+    roots = (os.environ.get("ProgramFiles"), os.environ.get("ProgramFiles(x86)"),
+             os.environ.get("LOCALAPPDATA"))
+    for root in roots:
+        if not root:
+            continue
+        for rel in ("RenderDoc/renderdoccmd.exe", "Programs/RenderDoc/renderdoccmd.exe"):
+            cand = Path(root) / rel
+            if cand.exists():
+                return str(cand)
+    return None
 
 
 def list_renderdoc_instances() -> list[dict]:
@@ -45,7 +65,11 @@ def list_renderdoc_instances() -> list[dict]:
 
 def start_adapter() -> None:
     env = os.environ.copy()
-    env.setdefault("DCC_MCP_RENDERDOC_CMD", r"C:\Program Files\RenderDoc\renderdoccmd.exe")
+    cmd = find_renderdoccmd()
+    if cmd:
+        env.setdefault("DCC_MCP_RENDERDOC_CMD", cmd)
+    else:
+        log("warning: 未找到 renderdoccmd；保留现有环境变量，或安装 RenderDoc 后重试")
     env.setdefault("DCC_MCP_RENDERDOC_AUTO_DOWNLOAD", "0")
     log_file = open(SERVER_LOG, "ab")
     # DETACHED_PROCESS: adapter 生命周期独立于本 stdio 会话, 客户端断开不回收

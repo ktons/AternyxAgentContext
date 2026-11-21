@@ -191,12 +191,14 @@ def _validate_value(path: str, token: dict, errors: list[str], warnings: list[st
         token["rgb"] = list(rgb)
         token["alpha"] = alpha
         token["oklch"] = [round(v, 6) for v in im.srgb8_to_oklch(rgb)]
-        extension = (token.get("extensions") or {}).get("aternyx", {})
+        # 本 skill 的扩展命名空间是 lookdev；aternyx 为早期 tokens 的兼容键
+        extensions = token.get("extensions") or {}
+        extension = extensions.get("lookdev") or extensions.get("aternyx") or {}
         declared = extension.get("oklch") if isinstance(extension, dict) else None
         if declared is not None:
             if (not isinstance(declared, list) or len(declared) != 3
                     or any(not isinstance(v, (int, float)) for v in declared)):
-                warnings.append(f"{path}: $extensions.aternyx.oklch 必须是 [L, C, H]")
+                warnings.append(f"{path}: $extensions.lookdev.oklch 必须是 [L, C, H]")
             else:
                 computed = token["oklch"]
                 if (abs(declared[0] - computed[0]) > 0.01

@@ -178,7 +178,7 @@ python <adapter>.py \
 
 ```bash
 # 1) 准备 spec（复制模板，改路径/leg/预算）
-cp .agents/skills/graphics-iteration/templates/search_spec.json temp/<任务>/search.json
+cp <skill>/templates/search_spec.json temp/<任务>/search.json
 
 # 2) 先跑基线，确认 leg 哈希互异、score 可解释
 python .../score_trial.py --metrics temp/<任务>_base/eval_metrics.json \
