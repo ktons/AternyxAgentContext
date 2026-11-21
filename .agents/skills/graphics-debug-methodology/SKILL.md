@@ -47,7 +47,10 @@ shader 沿 draw 实际绑定追踪，内置源与产物路径查现有注册表�
 
 ## 知识沉淀
 
-- 多轮排查使用[共享排查模板](references/investigation-template.md)，平台帧号与格式查对应工具资料。
+- 多轮排查使用[共享排查模板](references/investigation-template.md)，平台帧号与格式查对应工具资料：
+  Windows 用 [renderdoc-capture](../renderdoc-capture/SKILL.md)，macOS 用
+  [gfxrecon-capture](../gfxrecon-capture/SKILL.md)，改前/改后逐字节对拍用
+  [frame-verification](../frame-verification/SKILL.md)。
   实际观察写清工具版本、提交/产物、工程/视图、capture/帧/event/资源和证据，模块机制链接所属文档。
 - 把新事实、被证伪方向和复验结果写入[经验资料](references/experience.md)；工具命令和平台坑更新对应
   工具资料。按适用条件归档，并保留历史事实与出处。
