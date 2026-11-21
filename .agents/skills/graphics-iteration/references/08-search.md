@@ -106,15 +106,15 @@
 3. 失败（超时/异常/写不出文件）时框架记 `score=null`、`feasible=false`，按 `1e6` 参与搜索并继续；
 4. 评估器内部还原现场（Volume/相机/灯光/材质还原与读回校验）。
 
-参考适配器命令：
+适配器命令（骨架见 `templates/lookdev_trial_template.py`）：
 
 ```bash
-python .agents/skills/graphics-iteration/scripts/lookdev_trial.py \
+python <adapter>.py \
   --params-file {params} --out {out} \
   --legs <train legs> --tokens <tokens.json> --profile day
 ```
 
-适配器保证：
+项目适配器应保证：
 
 - Volume 字段未知时直接拒绝；写后读回校验；
 - 灯光覆盖发生在预设应用 seek 之后，capture 前复读 Transform；被动画写回则整 trial 失败
@@ -167,7 +167,7 @@ python .agents/skills/graphics-iteration/scripts/lookdev_trial.py \
   clip 参数化，再在 capture 前覆盖。
 - **冻帧**：同参数两次 sha 相同可能只是静态场景；不同 leg sha 相同才是冻帧签名。搜索前跑一次基线
   确认 leg 间哈希互异。
-- **缓存污染**：缓存键只有参数，不含二进制/token/leg 集版本；换任一项就换 `cache_dir`。
+- **缓存污染**：缓存键只含参数；二进制/token/leg 集版本变化时换 `cache_dir`。
 - **评估器超时**：`evaluator.timeout` 大于“启动 + 全部 leg 采集”；超时按失败计，会浪费预算。
 - **评估器命令路径**：命令模板含 `{params}`/`{out}`，路径带空格时用引号或短目录名；`temp/<任务>`
   用短横线命名。
@@ -188,9 +188,9 @@ python .../score_trial.py --metrics temp/<任务>_base/eval_metrics.json \
 python .../param_search.py --spec temp/<任务>/search.json --out temp/<任务>/search
 
 # 4) 复验最优：全量 leg + holdout + 两次确定性 + 中性门 + 人工
-python .../lookdev_trial.py --params-file temp/<任务>/search/best_params.json \
-  --out temp/<任务>_best --legs <train legs> --tokens <tokens> --profile day
-#    spec.mapping 含 material 时，复验命令加 --allow-material-write（先确认 git status 干净）
+python <adapter>.py --params-file temp/<任务>/search/best_params.json \
+  --out temp/<任务>_best --legs <all legs> --tokens <tokens> --profile day
+#    适配器会写材质时，先确认 git status 干净并在复验后核对
 python .../score_trial.py --metrics temp/<任务>_best/trial_metrics.json \
   --tokens <tokens> --profile day --out temp/<任务>_best/score.json
 ```

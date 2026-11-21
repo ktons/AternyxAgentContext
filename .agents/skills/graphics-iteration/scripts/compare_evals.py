@@ -1,13 +1,12 @@
 #!/usr/bin/env python3
 """两轮判读面结果对比：逐 leg 指标差 / 哈希 / clip，纯标准库。
 
-配套 ag_lookdev_shading_eval.py：两份 eval_metrics.json 按 leg 名配对，输出
+配套评估脚本产出的 `eval_metrics.json`：两份结果按 leg 名配对，输出
   - 逐 leg：base/final 的 p15/p50/p98、亮度比、clip、sha 是否相同、文件是否存在；
   - 分组汇总：body/face/hair/weapon/condition/close 的均值与最大 |Δp98|；
   - face_lr（左右 45° 对称性）四项指标的前后值；
   - checks：缺 leg、逐字节相同 leg 数、clip 非零 leg、p98 超观测上限的 leg。
-只读两份 JSON，不解码 PNG（逐像素 ROI 对比是 eval 脚本的职责；整帧行为中性对拍用
-acceptance-verify 的 frame_diff.py）。
+compare_evals 只读两份 JSON；逐像素 ROI 对比由评估脚本完成，整帧行为中性对拍由项目帧对比工具完成。
 
 用法：
   python .agents/skills/graphics-iteration/scripts/compare_evals.py <base_dir> <final_dir> \
@@ -28,7 +27,7 @@ GROUPS = ("body", "face", "hair", "weapon", "condition", "close")
 def load_metrics(directory: Path) -> dict:
     path = directory / "eval_metrics.json"
     if not path.is_file():
-        raise SystemExit(f"[compare_evals] 缺 {path}（先跑 ag_lookdev_shading_eval.py）")
+        raise SystemExit(f"[compare_evals] 缺 {path}（先跑评估脚本生成 eval_metrics.json）")
     try:
         data = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
@@ -140,7 +139,7 @@ def compare(base_dir: Path, final_dir: Path, p98_max: float) -> dict:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="对比两份 ag_lookdev eval_metrics.json")
+    parser = argparse.ArgumentParser(description="对比两份 eval_metrics.json")
     parser.add_argument("base_dir", type=Path)
     parser.add_argument("final_dir", type=Path)
     parser.add_argument("--out", type=Path, help="输出 JSON（缺省 <final_dir>/compare_evals.json）")

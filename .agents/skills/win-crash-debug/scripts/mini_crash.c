@@ -1,7 +1,8 @@
-/* skill 自检用最小崩溃程序: 用 `cl /nologo /Zi /Od mini_crash.c /Fe:mini_crash.exe`
- * 编译后跑 lldb_stack.py, 预期停在 deeper() 的空指针解引用并打印三层栈。
- * 注意源码不要写中文注释: cl 默认按代码页 936 读取, UTF-8 中文会触发 C4819
- * 吞掉换行导致编译错误。 */
+/* Minimal crash fixture for validating the stack-capture chain:
+ *   cl /nologo /Zi /Od mini_crash.c /Fe:mini_crash.exe
+ * It should stop at the null dereference in deeper() and print a three-frame stack.
+ * Keep this file ASCII: cl reads source in the system code page (936 on zh-CN),
+ * and UTF-8 comments can trigger C4819 or swallow line breaks. */
 #include <stdio.h>
 
 int* g_ptr = NULL;

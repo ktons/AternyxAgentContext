@@ -7,8 +7,7 @@
 执行 -k 里的 backtrace 再退出, 输出即"崩溃现场 + 全符号栈"。
 
 用法:
-  python lldb_stack.py --exe build/bin/AternyxMain.exe --args "-p ../../Test/Projects/General --frames 30" \
-      --cwd build/bin
+  python lldb_stack.py --exe <target.exe> --args "<程序参数>" --cwd <运行目录>
 退出码: 0=正常退出未崩溃; 2=捕获到崩溃(栈已打印); 1=环境/超时错误。
 """
 
@@ -16,16 +15,14 @@ import argparse
 import os
 import re
 import shlex
+import shutil
 import subprocess
 import sys
 import threading
 import time
 from pathlib import Path
 
-# 本机固定路径 (与 renderdoc-debug 等 skill 同一套约定): LLVM 安装于 F:/DevKit/LLVM
-DEFAULT_LLDB = r"F:/DevKit/LLVM/bin/lldb.exe"
-# LLVM 21 的 liblldb.dll 硬依赖 python310.dll (官方发行包未带, 本机 Python 是 3.11/3.12),
-# 补装的 3.10 embeddable 运行时放这里; Windows 会沿 PATH 搜索 DLL, 调 lldb 前注入即可
+# 可选的 DLL 补装目录：liblldb 缺 python310.dll 时把该目录注入子进程 PATH。
 DEFAULT_PY_DLL_DIR = os.path.join(os.path.expanduser("~"), ".local", "lib", "lldb-py310")
 
 CRASH_RE = re.compile(r"stop reason = (.+)")
@@ -40,23 +37,21 @@ def find_lldb(explicit: str) -> Path:
             raise SystemExit(f"[lldb_stack] 指定的 lldb 不存在: {p}")
         return p
     for candidate in (
-        os.environ.get("ATERNYX_LLDB"),
-        DEFAULT_LLDB,
+        os.environ.get("LLDB_PATH"),
+        os.environ.get("LLDB"),
+        shutil.which("lldb"),
     ):
         if candidate and Path(candidate).exists():
             return Path(candidate)
-    raise SystemExit("[lldb_stack] 找不到 lldb.exe, 用 --lldb 或环境变量 ATERNYX_LLDB 指定")
+    raise SystemExit("[lldb_stack] 找不到 lldb.exe, 用 --lldb 或环境变量 LLDB_PATH 指定")
 
 
 def ensure_python_dll(lldb_path: Path, py_dll_dir: str) -> None:
-    """liblldb.dll 缺 python310.dll 时把补装目录注入子进程 PATH。"""
+    """liblldb 缺 python310.dll 时把补装目录注入子进程 PATH。"""
     if (lldb_path.parent / "python310.dll").exists():
         return
     if not Path(py_dll_dir, "python310.dll").exists():
-        raise SystemExit(
-            f"[lldb_stack] lldb 缺 python310.dll 且补装目录无效: {py_dll_dir}\n"
-            "按 skill 文档下载 python-3.10.11-embed-amd64.zip 解压到该目录"
-        )
+        return
     os.environ["PATH"] = py_dll_dir + os.pathsep + os.environ.get("PATH", "")
 
 
@@ -93,11 +88,11 @@ def schedule_window_close(pid: int, delay_secs: int) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="lldb batch 崩溃抓栈")
     parser.add_argument("--exe", required=True, help="被测可执行文件 (绝对/相对路径)")
-    parser.add_argument("--args", default="", help='传给被测程序的参数串, 如 "-p ../../Test/Projects/General --frames 30" (被测程序 CWD=build/bin 时)')
-    parser.add_argument("--cwd", default=None, help="被测程序工作目录 (缺省用 lldb 进程的 CWD)")
+    parser.add_argument("--args", default="", help='传给被测程序的参数串, 如 "--frames 30"')
+    parser.add_argument("--cwd", default=None, help="被测程序工作目录 (缺省用当前 CWD)")
     parser.add_argument("--timeout", type=int, default=300, help="整体超时秒数 (缺省 300)")
     parser.add_argument("--bt-all", action="store_true", help="崩溃时打印所有线程的栈 (bt all)")
-    parser.add_argument("--lldb", default=None, help="lldb.exe 路径 (缺省 F:/DevKit/LLVM/bin/lldb.exe)")
+    parser.add_argument("--lldb", default=None, help="lldb.exe 路径 (缺省查 PATH/LLDB_PATH)")
     parser.add_argument("--py-dll-dir", default=DEFAULT_PY_DLL_DIR, help="python310.dll 补装目录")
     parser.add_argument("--cmd", action="append", default=[], help="run 之前附加的 lldb 命令 (可重复, 如下断点)")
     parser.add_argument("--close-after", type=int, default=0, metavar="SECS",
@@ -108,7 +103,13 @@ def main() -> int:
     parser.add_argument("--log", default=None, help="完整 lldb 输出落盘路径 (缺省 <exe>.lldb_stack.log 于 CWD)")
     cli = parser.parse_args()
 
-    exe = str(Path(cli.exe).resolve())
+    run_cwd = Path(cli.cwd).resolve() if cli.cwd else None
+    if run_cwd is not None and not run_cwd.is_dir():
+        raise SystemExit(f"[lldb_stack] 工作目录不存在: {run_cwd}")
+    exe_path = Path(cli.exe)
+    if run_cwd is not None and not exe_path.is_absolute():
+        exe_path = run_cwd / exe_path
+    exe = str(exe_path.resolve())
     if not Path(exe).exists():
         raise SystemExit(f"[lldb_stack] 目标不存在: {exe}")
     lldb = find_lldb(cli.lldb)
@@ -122,10 +123,10 @@ def main() -> int:
 
     argv = build_lldb_command(lldb, exe, cli.args, cli.bt_all, cli.cmd, cli.crash_cmd)
     print(f"[lldb_stack] {' '.join(argv)}")
-    print(f"[lldb_stack] cwd={os.getcwd()} timeout={cli.timeout}s")
+    print(f"[lldb_stack] cwd={run_cwd or os.getcwd()} timeout={cli.timeout}s")
 
     proc = subprocess.Popen(argv, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
-                            encoding="utf-8", errors="replace")
+                            encoding="utf-8", errors="replace", cwd=str(run_cwd) if run_cwd else None)
     lines: list = []
     close_scheduled = False
     try:

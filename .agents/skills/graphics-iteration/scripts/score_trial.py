@@ -2,21 +2,21 @@
 """复合评分：token 窗口 → 逐 leg 罚分 → 搜索目标 / 判读报告。
 
 定位：图形迭代「闭环参数搜索」的评分母本（对应 references/08-search.md）。输入是
-`ag_lookdev_shading_eval.py` 或 `lookdev_trial.py` 产出的逐 leg 指标 + design tokens；
-输出是单一标量（0 = 全部落在 token 窗口内）与可解释的分解，供 CMA-ES/TPE 使用，也可
+评估脚本或项目 trial 适配器产出的逐 leg 指标 + design tokens；输出是单一标量
+（0 = 全部落在 token 窗口内）与可解释的分解，供 CMA-ES/TPE 使用，也可
 单独作为一轮迭代的量化判读。
 
 设计纪律：
-  - 窗口/权重只来自设计 token（`lookdev.window.*` / `lookdev.weight.*`），脚本不内置
-    艺术阈值；token 缺失的指标只观察、不计分（在 `observed` 里列出）。
+  - 窗口/权重只来自设计 token（`lookdev.window.*` / `lookdev.weight.*`），艺术阈值全部
+    由 token 给出；token 缺失的指标只观察、不计分（在 `observed` 里列出）。
   - 打分 = 加权 mean + 加权 max 的混合：mean 拉整体、max 防「平均好但某机位坏」。
-  - 硬门（feasible=false）只收「不可能被接受」的情况：缺 leg、clip 超硬上限、编辑器
-    ERROR、参数未还原；窗口偏离是软罚分，不是硬门（艺术目标需要可搜索的连续地形）。
-  - 画质模型（MUSIQ/CLIP-IQA）如提供，只作参考项并单独列出，不参与 0 分判定。
+  - 硬门（feasible=false）覆盖「不可能被接受」的情况：缺 leg、clip 超硬上限、编辑器
+    ERROR、参数未还原；窗口偏离是软罚分，艺术目标由此获得可搜索的连续地形。
+  - 画质模型（MUSIQ/CLIP-IQA）如提供，只作参考项并单独列出，`score=0` 由窗口指标决定。
 
 用法：
   python .../score_trial.py --metrics temp/<任务>/eval_metrics.json \
-      --tokens Test/Projects/General/Fixtures/lookdev/art.tokens.json \
+      --tokens <tokens.json> \
       --profile day --out temp/<任务>/score.json
 
   # 自检（窗口内 0 分、越界单调、缺 leg 硬门）
@@ -88,7 +88,7 @@ def _penalty(value: float, low: float | None, high: float | None, scale: float) 
 
 
 def enrich_with_images(metrics: dict, tokens: dict, image_dir: Path) -> None:
-    """给 eval_metrics 的 leg 补 palette/构图（eval 母本不算这两类）。"""
+    """给 eval_metrics 的 leg 补 palette/构图（评估脚本未提供这两类时补齐）。"""
     from image_metrics import analyze_file
     if not tokens.get("palette"):
         raise SystemExit("--images 需要 token 文件含 color.palette.*")
@@ -216,7 +216,7 @@ def score(metrics: dict, tokens: dict, profile: str = "day",
 
 
 def evaluate_quality(quality: dict, metrics: dict) -> dict:
-    """画质模型参考项：相对基线的下降超过容差才产生罚分（不参与硬门）。
+    """画质模型参考项：相对基线的下降超过容差才产生罚分；硬门看窗口指标。
 
     输入形如：
       {"model": "musiq", "baseline": {"front_front": 62.1}, "tolerance": 1.5,

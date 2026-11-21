@@ -22,7 +22,7 @@
     "max_seconds": 3600
   },
   "evaluator": {
-    "command": "python .agents/skills/graphics-iteration/scripts/lookdev_trial.py --params-file {params} --out {out} --legs <train legs> --tokens <tokens.json> --profile day",
+    "command": "python <adapter>.py --params-file {params} --out {out} --legs <train legs> --tokens <tokens.json> --profile day",
     "timeout": 900,
     "workdir": "."
   },

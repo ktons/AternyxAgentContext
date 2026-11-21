@@ -8,22 +8,21 @@ W3C Design Tokens Community Group Format 2025.10 的可落地子集：
   - 别名 `{group.token}`（含 `$root` 路径）、链式引用与循环检测；
   - 已验证类型：color / number / dimension / duration / fontFamily / fontWeight /
     cubicBezier；其余类型原样保留只做警告；
-  - color 值支持 DTCG 对象 `{colorSpace, components, alpha?, hex?}`（本仓库只消费 srgb）。
+  - color 值支持 DTCG 对象 `{colorSpace, components, alpha?, hex?}`（消费端支持 srgb 与 srgb-linear）。
 
-约定（本仓库的「美术规范」投影，不是 DTCG 强制）：
+约定（图形迭代的「美术规范」投影，不是 DTCG 强制）：
   - `color.palette.<name>`：色板 token（镜头/材质必须能落到的颜色）；
   - `lookdev.window.<profile>.<group>.<metric>`：验收窗口（number）；
   - `lookdev.weight.<group>.<metric>`：复合分权重（number，缺省 1）；
   - `lookdev.paletteThreshold`：色板 ΔE2000 命中阈值（number，缺省 10）；
-  - `quality.<model>.*`：画质模型基线/容差（只作参考，不作硬门）。
+  - `quality.<model>.*`：画质模型基线/容差（作为参考项）。
 
-校验只回答「token 文件自身是否自洽、是否可被脚本消费」，不判断艺术好坏；艺术判断
-仍在 reference/审阅。口径变更（窗口、阈值、权重）必须改 token 文件并记录版本，不能
-在脚本里写死第二份。
+校验范围限于「token 文件自身是否自洽、是否可被脚本消费」，艺术判断交给 reference/审阅。
+口径变更（窗口、阈值、权重）改 token 文件并记录版本，脚本只读 token。
 
 用法：
   python .agents/skills/graphics-iteration/scripts/design_tokens.py lint \
-      Test/Projects/General/Fixtures/lookdev/art.tokens.json
+      <project>/design/lookdev/art.tokens.json
   python .../design_tokens.py resolve <file> --out temp/tokens.resolved.json
   python .../design_tokens.py palette <file>
   python .../design_tokens.py check-image <file> --image <png> [--roi torso] [--out json]

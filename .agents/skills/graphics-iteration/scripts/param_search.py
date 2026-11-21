@@ -2,8 +2,8 @@
 """闭环参数搜索：CMA-ES / TPE，复合分做目标，带缓存与 trial log。
 
 定位：图形迭代「参数搜索」母本（对应 references/08-search.md）。它只负责「提议参数 →
-调用评估器 → 读回分数 → 更新代理」，不碰引擎；评估器是项目适配层（本仓库参考实现
-`lookdev_trial.py`：应用参数 → 出图 → 评分 → 写 `trial_score.json`）。
+调用评估器 → 读回分数 → 更新代理」，引擎交互放在项目适配器（模板见
+`templates/lookdev_trial_template.py`：应用参数 → 出图 → 评分 → 写 `trial_score.json`）。
 
 空间约定（search spec JSON）：
   {
@@ -14,9 +14,9 @@
       "keyAzimuth":{"kind": "float", "min": -70, "max": 70, "step": 5}
     },
     "budget": {"trials": 40, "seed": 7, "optimizer": "cmaes", "max_seconds": 3600},
-    "evaluator": {"command": "python .../lookdev_trial.py --params-file {params} --out {out}",
+    "evaluator": {"command": "python <adapter>.py --params-file {params} --out {out}",
                    "timeout": 1200, "workdir": "."},
-    "objective": {"tokens": "...", "profile": "day", "required_legs": ["front_front"]},
+    "objective": {"tokens": "...", "profile": "day", "required_legs": ["<leg-1>"]},
     "cache_dir": "temp/<任务>/search_cache"
   }
 
@@ -27,10 +27,10 @@
     或以非零退出（框架按失败计入并继续）。
 
 纪律：
-  - 只优化 token 定义的复合分（见 score_trial.py），不优化「看起来」；
-  - 每次 trial 记录参数/分数/缓存命中/耗时，搜索结束必须用**留出 leg + 全量 43 leg**复验
-    最优解，不能直接把搜索最优当验收（见 references/08-search.md）；
-  - 同一 spec 重跑命中缓存；换 token/窗口/leg 集就是新搜索，不复用旧分。
+  - 只优化 token 定义的复合分（见 score_trial.py），把「看起来」交给人工判读；
+  - 每次 trial 记录参数/分数/缓存命中/耗时，搜索结束用**留出 leg + 全量 leg 集**复验
+    最优解，再进入验收（见 references/08-search.md）；
+  - 同一 spec 重跑命中缓存；换 token/窗口/leg 集时新建搜索，从新分数起算。
 
 用法：
   python .../param_search.py --spec temp/<任务>/search.json --out temp/<任务>/search
@@ -356,7 +356,7 @@ def run_evaluator(command: str, params_path: Path, out_dir: Path, timeout: float
 
 
 def build_params(values: dict, spec: dict) -> dict:
-    """把扁平搜索参数按 spec.mapping 组装成评估器参数（lookdev_trial 的 schema）。"""
+    """把扁平搜索参数按 spec.mapping 组装成评估器参数（适配器 schema）。"""
     mapping = spec.get("mapping") or {}
     params = json.loads(json.dumps(spec.get("fixed") or {}))
     for name, value in values.items():

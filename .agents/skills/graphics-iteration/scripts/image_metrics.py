@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """确定性图像指标：色彩（OKLCH/CIELAB/ΔE2000）+ 色板匹配 + saliency/构图。
 
-定位：图形迭代的「确定性指标」母本（对应 references/07-metrics.md）。只吃解码后的
-sRGB8 像素，不含随机数、不做色彩管理、不依赖第三方库；同一输入同一参数必须逐位
-可复现（浮点求和顺序固定）。画质模型（MUSIQ/CLIP-IQA）不在此实现：它们经
-`--quality-cmd` 外部命令接入，分数只作参考，不作验收门。
+定位：图形迭代的「确定性指标」母本（对应 references/07-metrics.md）。输入为解码后的
+sRGB8 像素；只用标准库，颜色计算按 sRGB 原始值，同一输入同一参数逐位复现。
+画质模型（MUSIQ/CLIP-IQA）经 `--quality-cmd` 外部命令接入，分数只作参考，验收门由
+窗口指标决定。
 
 指标分四组：
-  1. tone：luma 分位 / clip / 暗部色序（与 ag_lookdev_shading_eval.py 同定义，便于对齐）；
+  1. tone：luma 分位 / clip / 暗部色序；
   2. color：有效像素的 OKLCH 中位/色相分布、主导色簇、色板覆盖率与 ΔE2000；
   3. saliency：64×64 灰度谱残差（Hou & Zhang 2007）→ 归一化显著图与显著框；
   4. composition：主体框/显著框的占高、占宽、中心偏移、三分线距离与边距。
@@ -15,13 +15,13 @@ sRGB8 像素，不含随机数、不做色彩管理、不依赖第三方库；�
 口径纪律：
   - 颜色计算一律先 sRGB→线性→OKLab/XYZ；统计在 sRGB 值域上给 luma，不混用。
   - `--stride`、saliency 尺寸、掩码、色板阈值都写进输出 `settings`，跨轮只比同口径。
-  - 有效像素默认 = 非天空且 luma>floor（与 eval 母本一致）；close-up 用 all。
-  - 阈值/权重属于 tokens（design tokens），本脚本只提供数值，不内置验收结论。
+  - 有效像素默认 = 非天空且 luma>floor（与评估脚本一致）；close-up 用 all。
+  - 阈值/权重属于 tokens（design tokens），本脚本提供数值，验收结论由 tokens 窗口给出。
 
 用法：
   python .agents/skills/graphics-iteration/scripts/image_metrics.py \
     --image temp/<任务>/capture_front_front_1001.png \
-    --tokens Test/Projects/General/Fixtures/lookdev/art.tokens.json \
+    --tokens <tokens.json> \
     --roi 640,290,1280,580 --stride 1 --out temp/<任务>/metrics_front.json
 
   # 纯色彩工具：RGB/hex → OKLCH/CIELAB/ΔE
@@ -41,18 +41,23 @@ import sys
 import time
 from pathlib import Path
 
-# 同目录母本解码器（PNG 8bit 非隔行，口径与 ag_lookdev_shading_eval.py 完全一致）。
+# 共享 PNG/ROI 工具（同目录，纯标准库）。
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ag_lookdev_shading_eval import (  # noqa: E402
-    CLIP_LEVEL, FACE_ROI_REF, LUMA_FLOOR, TORSO_ROI_REF, decode_png_bytes,
-    percentile, scale_roi, write_png_rgb,
+from png_utils import (  # noqa: E402
+    decode_png_bytes, percentile, scale_roi, write_png_rgb,
 )
 
 METRICS_VERSION = 1
 
+# 指标口径常量（可按项目重标定）。
+CLIP_LEVEL = 250          # clip = 任一通道 >= 250
+LUMA_FLOOR = 0.05         # ROI 内排除近黑像素
+TORSO_ROI_REF = (640, 290, 1280, 580)   # 参考分辨率下的躯干带示例
+FACE_ROI_REF = (820, 330, 1100, 620)    # 参考分辨率下的脸部框示例
+
 # sRGB 常量（IEC 61966-2-1）
 _LUMA = (0.2126, 0.7152, 0.0722)
-_SKY = ((0.06, "b-r"), (0.70, "b"), (0.47, "r"))  # 与 eval 母本同式，见 _is_sky
+_SKY = ((0.06, "b-r"), (0.70, "b"), (0.47, "r"))  # 天空掩码系数，见 _is_sky
 
 # D65 白点（2°）
 _XN, _YN, _ZN = 0.95047, 1.00000, 1.08883
@@ -191,7 +196,7 @@ def format_hex(rgb: tuple[int, int, int]) -> str:
 # ======================================================================================
 
 def is_sky(r: int, g: int, b: int) -> bool:
-    """与 eval 母本同式：b-r>0.06*255 && b>0.70*255 && r>0.47*255。"""
+    """天空掩码：b-r>0.06*255 && b>0.70*255 && r>0.47*255。"""
     return (b - r) > 0.06 * 255.0 and b > 0.70 * 255.0 and r > 0.47 * 255.0
 
 
@@ -332,7 +337,7 @@ def spectral_saliency(gray: list[list[float]], size: int = SALIENCY_SIZE) -> lis
     span = high - low
     small_sal = [[(value - low) / span if span > 1e-12 else 0.0 for value in line] for line in sal]
 
-    # 双线性回放到输入尺寸（确定性；显著图只用于框/统计，不做像素级合成）
+    # 双线性回放到输入尺寸（确定性；显著图只用于框/统计）
     out: list[list[float]] = []
     for y in range(height):
         gy = (y + 0.5) * rows / height - 0.5
@@ -515,7 +520,7 @@ def palette_metrics(samples: list[tuple[int, int, int]], palette: list[dict],
 
 
 def dominant_colors(samples: list[tuple[int, int, int]], limit: int = 8) -> list[dict]:
-    """固定 8×8×8 OKLab 桶 + 桶内均值：确定性主导色（不做随机 k-means）。"""
+    """固定 8×8×8 OKLab 桶 + 桶内均值：以确定性桶均值替代随机 k-means。"""
     bins: dict[tuple[int, int, int], list] = {}
     for rgb in samples:
         lightness, a, b = linear_to_oklab(srgb8_to_linear(rgb))
