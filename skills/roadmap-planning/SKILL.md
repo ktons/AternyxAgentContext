@@ -1,12 +1,12 @@
 ---
 name: roadmap-planning
-description: 用户要求规划复杂任务的执行流程、整理 roadmap 或排任务依赖时使用；产出 roadmap 与迭代文档（agent 执行面），并附带一份给人看的开发文档；简单任务和现状评审直接在会话回答。
+description: 用户要求规划复杂任务的执行流程、整理 roadmap 或排任务依赖时使用；产出 roadmap、迭代文档与给人看的开发文档；简单任务和现状评审直接在会话回答。
 ---
 
 # 复杂任务执行流程与 roadmap
 
-把多阶段任务整理成 agent 可独立执行的流程：迭代文档承载目标与每阶段验收，roadmap 承载执行表；
-同时产出一份开发文档作为副产物，给人读方案与决策。设计文档不在本指令范围（由 `design-document` 指令产出）。
+把多阶段任务整理成 agent 可独立执行的流程：迭代文档承载目标与每阶段验收，roadmap 承载执行表，
+另附一份给人看的开发文档。设计文档不在本 skill 范围，由 `design-document` 产出。
 
 ## 授权与范围
 
@@ -19,11 +19,12 @@ description: 用户要求规划复杂任务的执行流程、整理 roadmap 或�
 
 1. **目标**：写成“做完是什么样”，可检验、可判定；列出范围边界与非目标。
 2. **阶段划分**：按可独立验收的增量分阶段，每阶段给可执行判据（可复制命令、预期输出、对比口径）。
-3. **勘察与锚点**：按架构入口 → 模块文档 → 必要源码记录 HEAD、工作区状态与 file:line；
-   执行所需结论内联进迭代文档，不靠“见开发文档”补齐。
-4. **任务拆解**：拆到可独立领取的粒度，标依赖与所属阶段，写进 roadmap；约 40 分钟实现量只作拆分估计。
+3. **勘察与锚点**：按架构总览 → 模块文档 → 必要源码记录 HEAD、工作区状态与 `file:line`；
+   执行所需结论内联进迭代文档，不写“见开发文档”补齐。
+4. **任务拆解**：拆到可独立领取的粒度，标依赖与所属阶段，写进 roadmap；拆分口径见 `development-workflow`。
 5. **写三份文档**：roadmap（执行表）、迭代文档（目标与每阶段验收、执行细节）、开发文档（给人看：
-   目标、改动落点与锚点、实现方案与关键决策、步骤、验收、风险与回退），开发文档按 dev-doc 模板，内容目标与 `dev-document` 一致。
+   目标、改动落点与锚点、实现方案与关键决策、步骤、验收、风险与回退）。
+   字段与章节按各自模板；开发文档与 `dev-document` 同一模板、同一必含项，不因是副产物而缩水。
 6. **自包含校验**：只读迭代文档与 roadmap 能否开工；不能就补内联，再交付。
 
 与本期相关时检查以下类别，逐条写处置；与本期无关的类别直接略过：
@@ -35,17 +36,12 @@ description: 用户要求规划复杂任务的执行流程、整理 roadmap 或�
 | 数据/生命周期 | 单视口字段阻塞多视口、生产链未调用回调 |
 | 死配置/资产漂移 | 零调用 API、无效开关、源资产缺组件、schema 与实现不符 |
 
-## 内容目标（必含）
-
-- 迭代文档：目标与范围、阶段划分与每阶段验收、阶段执行细节（改动落点、构建目标、测试命令）、依赖风险与无法验证项。
-- roadmap：任务表（ID、任务一句话、依赖、阶段、状态）、状态枚举、执行记录规则。
-- 开发文档（副产物，给人看）：目标行为、改动落点锚点、实现方案与关键决策、实施步骤、验收方式、风险与回退。
-
 ## 边界
 
 - 产出 roadmap、迭代文档与开发文档；不写设计文档，也不在 roadmap 里设决策点。
-- roadmap 与迭代文档合起来自包含，不引用开发文档与设计文档；开发文档独立成篇，双方互不依赖。
-- 初始化 roadmap 前确认当前为空或用户明确要求替换/追加；收口时删除迭代文档并重置 roadmap。
-- 模板：[roadmap 模板](../documentation-writing/templates/roadmap-template.md)、[迭代文档](../documentation-writing/templates/iteration-doc.md)、
-  [开发文档](../documentation-writing/templates/dev-doc.md)；
-  落位与共同写法见 `documentation-writing` skill，执行流程见 `development-workflow` skill。
+- 三份产物各自遵守自包含规则（见 `documentation-writing`）：roadmap 与迭代文档合起来即可开工，
+  开发文档独立成篇，双方互不依赖。
+- 初始化与追加按 `documentation-writing` 的类型表与生命周期执行；收口与状态流转由 `development-workflow` 负责。
+- 模板：[roadmap](../documentation-writing/templates/roadmap-template.md)、
+  [迭代文档](../documentation-writing/templates/iteration-doc.md)、
+  [开发文档](../documentation-writing/templates/dev-doc.md)。

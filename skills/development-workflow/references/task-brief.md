@@ -17,7 +17,7 @@
 
 ## 中断交接
 
-记录到 `.agents/docs/temp/<主题>-handoff.md` 或当前 roadmap 任务备注：
+记录到 `.agents/docs/temp/handoff-<主题>.md` 或当前 roadmap 任务备注（交接单随任务收口清理）：
 
 1. 分支与 HEAD、`git status --short` / `git diff --stat` 快照、相关证据文件路径。
 2. 已完成且已验证部分；当前文件完成度与尚未通过的检查。

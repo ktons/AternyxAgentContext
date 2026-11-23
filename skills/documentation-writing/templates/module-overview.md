@@ -11,7 +11,7 @@
 - 依赖边：
   - 依赖：`module-<模块A>.md`（或 `<模块A>/overview.md`），<依赖内容一句话>
   - 被依赖：`module-<模块B>.md`（或 `<模块B>/overview.md`），<依赖内容一句话>
-- 跨层关系：见 `.agents/docs/overview-architecture.md`
+- 跨层关系：见架构总览 `.agents/docs/overview-architecture.md` 的依赖方向章节
 
 ## 二、设计与机制
 
