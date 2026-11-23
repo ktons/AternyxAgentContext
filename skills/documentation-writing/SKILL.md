@@ -37,15 +37,8 @@ description: 维护架构总览与模块文档，或需要确定文档落位、�
 - `.agents/docs/temp/` 放文档形态的过程记录；抓帧、日志、截图、一次性脚本等运行产物放 `<workspace>/temp/`。
 - 用户指定路径时按用户路径落位，其余约定不变。
 
-## 选型
-
-| 用户要做的事 | 用哪个 skill |
-|---|---|
-| 讨论或比较技术方案、做选型、写设计文档 | `design-document` |
-| 说明代码怎么改、定开发计划与验收、写开发文档 | `dev-document` |
-| 规划多阶段任务的执行流程、整理 roadmap 与任务依赖 | `roadmap-planning` |
-| 执行已有 roadmap：派发、实现、审查、验证、收口 | `development-workflow` |
-| 维护架构总览与模块文档、整理文档结构 | 本 skill |
+需要产出某类文档时，按类型表「产出 skill」列选择；执行已规划的 roadmap 用 `development-workflow`。
+本 skill 只维护落位与写法，不规定各 skill 的流程与内容。
 
 ## 通用写法
 
