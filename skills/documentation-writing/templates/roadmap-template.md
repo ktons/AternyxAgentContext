@@ -1,16 +1,16 @@
 # 迭代 roadmap（当前迭代：<主题>）
 
+> 落位：`.agents/docs/temp/roadmap.md`（临时文档，不入库）
+> 当前迭代文档：`.agents/docs/temp/iteration-<主题>.md`（目标与每阶段验收在那里）
 > 本文件是当前迭代的执行表，只记任务、依赖、阶段、状态与执行记录；方案取舍与验收判据不在这里。
 > 当前迭代为空时使用本模板；替换或追加迭代以用户明确要求为准。
-> 当前迭代文档：`.agents/docs/iteration/<主题>.md`（目标与每阶段验收在那里）
 > 执行分支：<当前或用户指定分支；未约定填“未指定”>
 > 集成目标：<已约定目标分支；未约定填“未指定”>
 > 状态枚举：pending / in-progress / done / 无法验证。
-> 生命周期：本文件与迭代文档都不入库；迭代收口时删除迭代文档，并把本文件重置回本模板
-> （标题置回「当前迭代：无」，两节表格清空）。历史不保留，结论在收口前沉淀到
-> `.agents/docs/modules/` 与架构总览。
+> 生命周期：迭代收口时删除迭代文档，并把本文件重置回本模板（标题置回「当前迭代：无」，两节表格清空）；
+> 历史不保留，结论在收口前沉淀到 `.agents/docs/modules/` 与架构总览。
 > 规划按 `roadmap-planning` skill，执行与收口按 `development-workflow` skill，
-> 落位与生命周期约定见 `documentation-writing` skill。
+> 落位、命名与生命周期约定见 `documentation-writing` skill。
 
 ---
 
