@@ -1,23 +1,24 @@
 ---
 name: documentation-writing
-description: 编写、维护和整理文档，或将讨论、分析与结论总结为一份文档时使用；涉及模块章节结构、设计、开发文档落位与各类文档模板；完成实现后及时同步文档。
+description: 编写、维护和整理文档，或将讨论、分析与结论总结为一份文档时使用；约定文档落位、模块文档章节结构与各类文档模板；具体产出按 design-document、dev-document、roadmap-planning 三个指令 skill 执行。
 ---
 
 # 文档编写与维护
 
-本技能约定模块文档的章节结构，以及设计文档、开发文档、roadmap 与迭代文档的落位与写法。
-编写模块文档时，先从架构总览定位所属模块，再读模块文档，并用必要源码核对当前事实。
+本技能约定文档落位、模块文档章节结构，以及各类文档模板。三个独立指令的产出流程与必含项由各自 skill 承载：
+方案设计用 `design-document`，开发计划用 `dev-document`，复杂任务执行流程用 `roadmap-planning`（产出 roadmap 与迭代文档）。
+本技能只负责落位、结构与共同写法，不替这些指令决定产出内容。
 
 ## 文档类型与落位
 
 文档总目录为 `.agents/docs/`；架构总览固定为 `.agents/docs/overview-architecture.md`，作为文档入口。
 
-| 类型 | 用途 | 位置 | 生命周期 | 模板 |
-|---|---|---|---|---|
-| 模块文档 | 维护模块当前事实 | `.agents/docs/modules/` | 永久，随代码同步 | [模块入口](templates/module-overview.md)、[主题文档](templates/module-topic.md) |
-| 设计文档 | 记录一次设计的讨论：候选、权衡与选型结论，按需写 | `.agents/docs/design/` | 一次性产物 | [设计文档](templates/design-doc.md) |
-| 开发文档 | 记录一次开发的落地：方案、关键决策与代码锚点，给人读，独立成篇 | `.agents/docs/dev/` | 一次性产物 | [开发文档](templates/dev-doc.md) |
-| roadmap 与迭代文档 | roadmap 是执行表；迭代文档写目标与每阶段验收 | `.agents/docs/iteration/` | 迭代收口清空 | [roadmap 模板](templates/roadmap-template.md)；[迭代文档](templates/iteration-doc.md) |
+| 类型 | 用途 | 位置 | 生命周期 | 指令 | 模板 |
+|---|---|---|---|---|---|
+| 模块文档 | 维护模块当前事实 | `.agents/docs/modules/` | 永久，随代码同步 | 本技能 | [模块入口](templates/module-overview.md)、[主题文档](templates/module-topic.md) |
+| 设计文档 | 方案设计：成熟实现调研、候选与权衡 | `.agents/docs/design/` | 一次性产物 | `design-document` | [设计文档](templates/design-doc.md) |
+| 开发文档 | 具体开发计划：改动落点、步骤与验收 | `.agents/docs/dev/` | 一次性产物 | `dev-document` | [开发文档](templates/dev-doc.md) |
+| roadmap 与迭代文档 | 执行表与目标/每阶段验收 | `.agents/docs/iteration/` | 迭代收口清空 | `roadmap-planning` | [roadmap 模板](templates/roadmap-template.md)；[迭代文档](templates/iteration-doc.md) |
 
 一次性产物指为特定目的写作一次、不入库，对应任务入版后可清理。
 用户指定保存路径时，按用户路径落位。
@@ -50,22 +51,23 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 - **环境坑**：记录设备环境因素带来的适用条件与处置，覆盖平台、驱动、编译器等。这条只有无法避免时才写，要尽可能通过流程规避。
 - **已知缺陷与方向**：记录真实且尚未解决的缺陷、当前不支持的能力与远期方向。
 
-## 设计文档与开发文档
+## 一次性文档
 
-两类均为一次性产物，面向人类读者，核心要求是易于人类理解：
+设计文档、开发文档、roadmap 与迭代文档都是一次性产物，可由用户按需单独发起，互不强制：
+只要其中一份时，按对应指令 skill 产出，不要求补齐另外两份；同时产出时也各自独立成文。
+
+面向人类读者的两类（设计文档、开发文档）共同要求：
 
 - 叙述完整：给足背景、动机与推导过程，关键内容用完整段落陈述，读者单独阅读即可跟上。
 - 信息充实：覆盖读者从零理解所需的背景、术语、依赖与示例，按理解顺序组织。
 - 表达自然：以通顺陈述为主，列表与表格用于并列信息，保留必要的细节与特例说明。
 - 落到代码：给出与代码现状的对应关系——模块、入口、锚点，便于读者定位验证。
 
-**设计文档是讨论**：承载发散到收敛——背景与目标、现状与差距、候选方案与权衡、选定方案与理由、风险与开放问题。
-它只在确有选型探讨要留档时写，允许未定稿（状态标草拟），不强制与开发文档成对出现。
+## 设计文档与开发文档
 
-**开发文档是落地，且独立成篇**：目标、改动落点、实现方案与关键决策、实施步骤、验收方式都写在这里。
-迭代中拍板的决策（选了什么、为什么、放弃了什么、代价是什么）靠开发文档阐述，roadmap 与迭代文档不设决策项。
-读者不依赖 roadmap、迭代文档或设计文档即可理解并复核这次开发；
-无实质选型分歧的改动，结论与理由直接写进开发文档，不必另写设计文档。
+设计文档围绕方案设计组织：成熟实现调研、候选与权衡、推荐方案与理由、风险与未决。
+开发文档围绕具体开发计划组织：改动落点与锚点、实施步骤与顺序、每步验收、风险与回退。
+两份自包含、互不引用，读者不需要另一份文档就能理解本文；必含项与产出流程见 `design-document` 与 `dev-document`。
 关键位置落到代码锚点（`path:line` + 符号名），注明代码快照，行号漂移后以代码为准。
 
 ## roadmap 与迭代文档
@@ -81,5 +83,4 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 - 状态按 pending / in-progress / done / 无法验证 登记，执行记录按轮写结果与验证入口，意外情况写备注。
 - 生命周期：当前迭代为空或用户明确要求替换时初始化；执行中插入或追加任务直接更新 roadmap，
   沿用已有目标与阶段划分；迭代收口删除迭代文档并把 roadmap 重置为空模板，历史留 Git，机制沉淀到模块文档。
-- 模板见 [roadmap 模板](templates/roadmap-template.md) 与 [迭代文档](templates/iteration-doc.md)；
-  规划流程按 `complex-task-planning` skill，执行与状态流转按 `development-workflow` skill。
+- 流程见 `roadmap-planning` skill，执行与状态流转按 `development-workflow` skill。
