@@ -34,4 +34,5 @@ description: 用户要求做开发计划、写开发文档、说明代码怎么�
 
 - 独立成篇：不引用设计文档、roadmap 与迭代文档；需要方案论证就补两三句理由，不要求读者跳转。
 - 不写任务状态与执行记录，那是 roadmap 的事；也不写每阶段验收表，那是迭代文档的事。
+- 本指令与 roadmap 规划时附带的开发文档同一目标：同一模板、同一必含项，不因触发方式不同而缩水。
 - 模板见 [开发文档模板](../documentation-writing/templates/dev-doc.md)，落位与共同写法见 `documentation-writing` skill。

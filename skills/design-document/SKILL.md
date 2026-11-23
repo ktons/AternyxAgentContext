@@ -31,5 +31,5 @@ description: 用户要求做方案设计、写设计文档、比较技术方案�
 ## 边界
 
 - 本文自包含：结论与取舍都在本文，不引用尚不存在的开发文档或 roadmap。
-- 实施步骤、代码改动清单与验收属于开发文档，本文不写；需要时由用户另行下 `dev-document` 指令。
+- 实施步骤、代码改动清单与验收属开发文档，本文不写。
 - 模板见 [设计文档模板](../documentation-writing/templates/design-doc.md)，落位与共同写法见 `documentation-writing` skill。

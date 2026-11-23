@@ -17,7 +17,7 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 |---|---|---|---|---|---|
 | 模块文档 | 维护模块当前事实 | `.agents/docs/modules/` | 永久，随代码同步 | 本技能 | [模块入口](templates/module-overview.md)、[主题文档](templates/module-topic.md) |
 | 设计文档 | 方案设计：成熟实现调研、候选与权衡 | `.agents/docs/design/` | 一次性产物 | `design-document` | [设计文档](templates/design-doc.md) |
-| 开发文档 | 具体开发计划：改动落点、步骤与验收 | `.agents/docs/dev/` | 一次性产物 | `dev-document` | [开发文档](templates/dev-doc.md) |
+| 开发文档 | 具体开发计划：改动落点、步骤与验收 | `.agents/docs/dev/` | 一次性产物 | `dev-document`（或 roadmap 规划的副产物） | [开发文档](templates/dev-doc.md) |
 | roadmap 与迭代文档 | 执行表与目标/每阶段验收 | `.agents/docs/iteration/` | 迭代收口清空 | `roadmap-planning` | [roadmap 模板](templates/roadmap-template.md)；[迭代文档](templates/iteration-doc.md) |
 
 一次性产物指为特定目的写作一次、不入库，对应任务入版后可清理。
@@ -53,8 +53,8 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 
 ## 一次性文档
 
-设计文档、开发文档、roadmap 与迭代文档都是一次性产物，可由用户按需单独发起，互不强制：
-只要其中一份时，按对应指令 skill 产出，不要求补齐另外两份；同时产出时也各自独立成文。
+三条指令各自独立发起，互不强制：下设计指令只出设计文档；下开发指令只出开发文档；
+下 roadmap 指令出 roadmap 与迭代文档，并附带一份给人看的开发文档。同时产出时各文档独立成文。
 
 面向人类读者的两类（设计文档、开发文档）共同要求：
 
@@ -74,6 +74,7 @@ description: 编写、维护和整理文档，或将讨论、分析与结论总�
 
 给 agent 的执行面由两份文件组成：**迭代文档**写目标与每阶段验收，**roadmap** 是执行表。
 两份合起来自包含，不引用开发文档与设计文档，执行所需的结论内联其中，agent 只读这两份即可开工。
+同一份规划会附带一份给人看的开发文档（方案、决策与步骤），它不参与 agent 执行，也不被这两份文档引用。
 
 - 迭代文档是静态部分，重点是目标与每阶段验收：目标写成“做完是什么样”，可检验、可判定；
   每阶段给可复制命令、预期输出或对比口径。阶段执行细节（改动落点、改法、先例、构建目标、测试命令）内联，
